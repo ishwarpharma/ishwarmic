@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISHWAR ITEM MASTER FILE</title>
+    <title>PMBJP Item Master</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -98,7 +98,7 @@
 
         async function loadData() {
             try {
-                const response = await fetch('ISHWARMIC.xlsx');
+                const response = await fetch('pmbjp.xlsx');
                 const arrayBuffer = await response.arrayBuffer();
                 const workbook = XLSX.read(arrayBuffer, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
@@ -175,7 +175,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <header>📋 ISHWAR ITEM MASTER FILE <span id="data-counter">Total Items: 0</span></header>
+    <header>📋 PMBJP Item Master <span id="data-counter">Total Items: 0</span></header>
     <main>
         <div class="search-container">
             <input type="text" id="search-bar" placeholder="🔍 Search for items..." oninput="searchItems()">
@@ -186,6 +186,9 @@
                 <tr>
                     <th>Drug</th>
                     <th>Generic Name</th>
+                    <th>Unit Size</th>
+                    <th>MRP</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="results-body">
