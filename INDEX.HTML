@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISHWAR ITEM MASTER FILE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        #data-counter {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            background: white;
+            color: #4CAF50;
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-container input {
+            width: 60%;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .search-container button {
+            margin-left: 1rem;
+            padding: 0.8rem 1.2rem;
+            font-size: 1rem;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .highlight {
+            background-color: yellow;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-container label {
+            margin-left: 5px;
+        }
+    </style>
+    <script>
+        let data = [];
+
+        async function loadData() {
+            try {
+                const response = await fetch('ISHWARMIC.xlsx');
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                data = XLSX.utils.sheet_to_json(worksheet, { defval: '' }); // Ensures no undefined values
+                document.getElementById('data-counter').innerText = `Total Items: ${data.length}`;
+                searchItems();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function searchItems() {
+            const searchValue = document.getElementById("search-bar").value.toLowerCase().trim();
+            const resultsTable = document.getElementById("results-body");
+
+            if (searchValue.length < 3) {
+                resultsTable.innerHTML = "";
+                return;
+            }
+
+            const searchTerms = searchValue.split(" ");
+            const filteredData = data.filter(item => {
+                const genericName = (item["Generic Name"] || '').toLowerCase();
+                return searchTerms.every(term => genericName.includes(term));
+            });
+
+            resultsTable.innerHTML = filteredData.map(item => {
+                const drugCode = item["Drug"]?.toString().trim() || 'N/A';
+                const mrp = formatMRP(item["MRP"]);
+                return `
+                    <tr>
+                        <td>${drugCode}</td>
+                        <td>${highlightMatches(item["Generic Name"] || '', searchTerms)}</td>
+                        <td>${item["Unit Size"] || ''}</td>
+                        <td>${mrp}</td>
+                        <td class="checkbox-container">
+                            <input type="checkbox" id="copy-${drugCode}" onclick="copyToMemory('${item["Generic Name"] || ''}')">
+                            <label for="copy-${drugCode}">Save</label>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function highlightMatches(text, terms) {
+            const regex = new RegExp(`(${terms.join("|")})`, "gi");
+            return text.replace(regex, match => `<span class='highlight'>${match}</span>`);
+        }
+
+        function formatMRP(mrpValue) {
+            if (typeof mrpValue === 'number') {
+                return mrpValue.toFixed(2);
+            } else if (!isNaN(parseFloat(mrpValue))) {
+                return parseFloat(mrpValue).toFixed(2);
+            } else {
+                return mrpValue || 'N/A';
+            }
+        }
+
+        function resetSearch() {
+            document.getElementById("search-bar").value = "";
+            searchItems();
+        }
+
+        function copyToMemory(content) {
+            navigator.clipboard.writeText(content).then(() => {
+                alert(`Copied to memory: ${content}`);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <header>📋 ISHWAR ITEM MASTER FILE <span id="data-counter">Total Items: 0</span></header>
+    <main>
+        <div class="search-container">
+            <input type="text" id="search-bar" placeholder="🔍 Search for items..." oninput="searchItems()">
+            <button onclick="resetSearch()">Reset</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Drug</th>
+                    <th>Generic Name</th>
+                </tr>
+            </thead>
+            <tbody id="results-body">
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>
