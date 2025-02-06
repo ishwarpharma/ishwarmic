@@ -83,15 +83,6 @@
         .highlight {
             background-color: yellow;
         }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-        }
-
-        .checkbox-container label {
-            margin-left: 5px;
-        }
     </style>
     <script>
         let data = [];
@@ -103,7 +94,7 @@
                 const workbook = XLSX.read(arrayBuffer, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                data = XLSX.utils.sheet_to_json(worksheet, { defval: '' }); // Ensures no undefined values
+                data = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
                 document.getElementById('data-counter').innerText = `Total Items: ${data.length}`;
                 searchItems();
             } catch (error) {
@@ -128,17 +119,13 @@
 
             resultsTable.innerHTML = filteredData.map(item => {
                 const drugCode = item["Drug"]?.toString().trim() || 'N/A';
-                const mrp = formatMRP(item["MRP"]);
                 return `
                     <tr>
+                        <td>
+                            <button onclick="copyToMemory('${drugCode}')">📋 Copy</button>
+                        </td>
                         <td>${drugCode}</td>
                         <td>${highlightMatches(item["Generic Name"] || '', searchTerms)}</td>
-                        <td>${item["Unit Size"] || ''}</td>
-                        <td>${mrp}</td>
-                        <td class="checkbox-container">
-                          <input type="checkbox" id="copy-${drugCode}" onclick="copyToMemory('${drugCode}')">
-                            <label for="copy-${drugCode}">Save</label>
-                        </td>
                     </tr>
                 `;
             }).join("");
@@ -149,16 +136,6 @@
             return text.replace(regex, match => `<span class='highlight'>${match}</span>`);
         }
 
-        function formatMRP(mrpValue) {
-            if (typeof mrpValue === 'number') {
-                return mrpValue.toFixed(2);
-            } else if (!isNaN(parseFloat(mrpValue))) {
-                return parseFloat(mrpValue).toFixed(2);
-            } else {
-                return mrpValue || 'N/A';
-            }
-        }
-
         function resetSearch() {
             document.getElementById("search-bar").value = "";
             searchItems();
@@ -166,7 +143,7 @@
 
         function copyToMemory(content) {
             navigator.clipboard.writeText(content).then(() => {
-                alert(`Copied to memory: ${content}`);
+                alert(`Copied: ${content}`);
             });
         }
 
@@ -184,11 +161,9 @@
         <table>
             <thead>
                 <tr>
+                    <th>Action</th>
                     <th>Drug</th>
                     <th>Generic Name</th>
-                    <th>Unit Size</th>
-                    <th>MRP</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="results-body">
