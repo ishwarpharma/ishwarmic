@@ -136,7 +136,7 @@
                         <td>${item["Unit Size"] || ''}</td>
                         <td>${mrp}</td>
                         <td class="checkbox-container">
-                            <input type="checkbox" id="copy-${drugCode}" onclick="copyToMemory('${item["Generic Name"] || ''}')">
+                          <input type="checkbox" id="copy-${drugCode}" onclick="copyToMemory('${drugCode}')">
                             <label for="copy-${drugCode}">Save</label>
                         </td>
                     </tr>
